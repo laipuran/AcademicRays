@@ -20,7 +20,7 @@ git switch feat
 
 ```bash
 # 1. 暂存当前工作树的更改
-git stash save "临时保存的工作"
+git stash push -m "临时保存的工作"
 
 # 2. 切换到目标分支
 git checkout feat
