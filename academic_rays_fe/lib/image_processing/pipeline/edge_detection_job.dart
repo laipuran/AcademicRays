@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'dart:ui';
-import 'package:opencv_dart/opencv_dart.dart' as cv;
+import 'package:dartcv4/dartcv.dart' as cv;
 import 'pipeline_interface.dart';
 
 /// 纸张边缘检测任务
@@ -23,19 +23,35 @@ class EdgeDetectionJob extends ImageProcessingJob<List<Offset>> {
 
       // 2. 预处理：灰度化和高斯模糊减噪
       gray = cv.cvtColor(mat, cv.COLOR_BGR2GRAY);
-      blurred = cv.gaussianBlur(gray, (5, 5), 0);
+      // 增加高斯模糊核大小，以平滑掉文字细节，避免检测到由于文字对比度产生的边缘
+      blurred = cv.gaussianBlur(gray, (11, 11), 0);
 
       // 3. Canny 边缘检测
       edged = cv.canny(blurred, 75, 200);
 
+      // 增加膨胀操作，连接断裂的边缘 (由于光照阴影可能导致边缘不连续)
+      final kernel = cv.getStructuringElement(cv.MORPH_RECT, (9, 9));
+      final dilated = cv.dilate(edged, kernel);
+      kernel.dispose(); // 及时释放资源
+      edged.dispose(); // 释放旧的 edged
+      edged = dilated;
+
       // 4. 查找轮廓并按面积排序
-      final contoursResult = cv.findContours(edged, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
+      // 使用 RETR_EXTERNAL 只查找最外层轮廓，忽略书本内部的文字轮廓
+      final contoursResult = cv.findContours(edged, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
       contours = contoursResult.$1;
       
       final sortedContours = contours.toList()
         ..sort((a, b) => cv.contourArea(b).compareTo(cv.contourArea(a)));
 
+      // 计算最小有效面积 (例如图像总面积的 5%)
+      final imageArea = mat.rows * mat.cols;
+      final minArea = imageArea * 0.05;
+
       for (var contour in sortedContours) {
+        // 面积过滤
+        if (cv.contourArea(contour) < minArea) continue;
+
         // 计算周长并进行多边形逼近
         final peri = cv.arcLength(contour, true);
         final approx = cv.approxPolyDP(contour, 0.02 * peri, true);
