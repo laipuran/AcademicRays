@@ -39,23 +39,11 @@
 
 我们需要在性能（FPS）和准确度之间通过权衡。
 
-### 3.1 方案 A：使用 ML Kit Document Scanner (推荐)
-Google 提供的封装好的扫描 UI flow。
-* **优点**：集成度极高，包含 UI、自动捕获、裁剪编辑器、滤镜。开发成本最低。
-* **缺点**：UI 定制性较差，是一个黑盒 Activity/ViewController。
-* **适用性**：如果我们需要快速验证 MVP，这是首选。
-
-### 3.2 方案 B：OpenCV / 自研算法 + Flutter UI
+### 方案 OpenCV / 自研算法 + Flutter UI
 使用 `opencv_dart` 或通过 FFI 调用 C++ OpenCV 库。
 * **流程**：Canny 边缘检测 -> 轮廓查找 -> 多边形拟合 -> 寻找最大四边形。
 * **优点**：完全可控，可以无缝嵌入我们自己的 Flutter 拍照页面，可以自定义“稳定检测”的逻辑。
 * **缺点**：开发工作量大，需处理不同光照下的鲁棒性问题，需自行实现透视变换算法。
-
-### 3.3 方案 C：混合插件 (如 `cunning_document_scanner` 或 `edge_detection`)
-社区提供的封装了 iOS (WeScan/VisionKit) 和 Android (OpenCV/MLKit) 原生能力的插件。
-* **优点**：利用了系统级能力，比纯 OpenCV 更轻量，比完整 ML Kit 更灵活。
-
-**初步结论**：优先尝试 **方案 A (ML Kit Document Scanner)**，因为 RFC #1 已经引入了 Google ML Kit 生态。如果 UI 定制需求强烈（例如需要非常特殊的引导动画），则回退到方案 C。
 
 ---
 
@@ -84,6 +72,4 @@ class ScanMetadata {
 
 ## 6. 下一步行动建议
 
-1. **原型开发 (Spike)**：创建一个 Flutter 页面，集成 `google_mlkit_document_scanner`，验证其裁剪精度和滤镜效果。
-2. **集成测试**：编写集成测试（如 `integration_test/edge_detection_test.dart`），确保调用扫描器后能正确返回图片文件路径。
-3. **UI/UX 设计**：设计扫描后的预览、手动调整角点的交互界面（如果 ML Kit 的默认界面不够用）。
+1. **UI/UX 设计**：设计扫描后的预览、手动调整角点的交互界面（如果 ML Kit 的默认界面不够用）。
