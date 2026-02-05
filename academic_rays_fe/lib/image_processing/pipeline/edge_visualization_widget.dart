@@ -26,19 +26,34 @@ class _EdgeVisualizationWidgetState extends State<EdgeVisualizationWidget> {
     _loadImage();
   }
 
+  @override
+  void dispose() {
+    _image?.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadImage() async {
     final ui.ImmutableBuffer buffer = await ui.ImmutableBuffer.fromUint8List(
       widget.imageData,
     );
+    
     final ui.ImageDescriptor descriptor = await ui.ImageDescriptor.encoded(
       buffer,
     );
+    buffer.dispose();
+    
     final ui.Codec codec = await descriptor.instantiateCodec();
+    descriptor.dispose();
+    
     final ui.FrameInfo frameInfo = await codec.getNextFrame();
+    codec.dispose();
+
     if (mounted) {
       setState(() {
         _image = frameInfo.image;
       });
+    } else {
+      frameInfo.image.dispose();
     }
   }
 
