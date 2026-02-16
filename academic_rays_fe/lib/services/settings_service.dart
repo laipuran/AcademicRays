@@ -1,9 +1,11 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SettingsService {
   final _storage = const FlutterSecureStorage();
 
   static const _geminiApiKey = 'gemini_api_key';
+  static const _zhipuApiKey = 'zhipu_api_key';
   static const _mathpixAppId = 'mathpix_app_id';
   static const _mathpixAppKey = 'mathpix_app_key';
 
@@ -12,7 +14,19 @@ class SettingsService {
   }
 
   Future<String?> getGeminiApiKey() async {
-    return await _storage.read(key: _geminiApiKey);
+    final storedKey = await _storage.read(key: _geminiApiKey);
+    if (storedKey != null && storedKey.isNotEmpty) return storedKey;
+    return dotenv.env['GEMINI_API_KEY'];
+  }
+
+  Future<void> setZhipuApiKey(String key) async {
+    await _storage.write(key: _zhipuApiKey, value: key);
+  }
+
+  Future<String?> getZhipuApiKey() async {
+    final storedKey = await _storage.read(key: _zhipuApiKey);
+    if (storedKey != null && storedKey.isNotEmpty) return storedKey;
+    return dotenv.env['ZHIPU_API_KEY'];
   }
 
   Future<void> setMathpixKeys(String appId, String appKey) async {

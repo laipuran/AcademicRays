@@ -3,7 +3,7 @@ import '../database/database.dart';
 import '../database/note_repository.dart';
 import '../services/settings_service.dart';
 import '../services/interfaces.dart';
-import '../services/gemini_service.dart';
+import '../services/llm_service.dart';
 import '../services/ocr_service.dart';
 import '../pipeline/pipeline_manager.dart';
 
@@ -26,27 +26,33 @@ final settingsServiceProvider = Provider<SettingsService>((ref) {
 });
 
 // We provide an IOcrService but it could be toggled between Local/Cloud
-final ocrServiceProvider = Provider<IOcrService>((ref) {
-  // Ideally, read from settings to decide which service to return
-  // For now, defaulting to Local placeholder
+final ocrServiceProvider = FutureProvider<IOcrService>((ref) async {
+  final settings = ref.watch(settingsServiceProvider);
+  final zhipuKey = await settings.getZhipuApiKey();
+  
+  if (zhipuKey != null && zhipuKey.isNotEmpty) {
+    return GlmOcrService(apiKey: zhipuKey);
+  }
+  
+  // Defaulting to Local placeholder if no cloud key is provided
   return LocalOcrService();
 });
 
 // LLM service requires an API key
 final llmServiceProvider = FutureProvider<ILlmService>((ref) async {
   final settings = ref.watch(settingsServiceProvider);
-  final apiKey = await settings.getGeminiApiKey();
+  final apiKey = await settings.getZhipuApiKey();
   if (apiKey == null || apiKey.isEmpty) {
-    throw Exception("Gemini API Key is not set in Settings.");
+    throw Exception("Zhipu API Key is not set in Settings.");
   }
-  return GeminiLlmService(apiKey);
+  return ZhipuLlmService(apiKey);
 });
 
 // --- Pipeline Manager Provider ---
 
 final pipelineManagerProvider = FutureProvider<NotePipelineManager>((ref) async {
   final repository = ref.watch(noteRepositoryProvider);
-  final ocr = ref.watch(ocrServiceProvider);
+  final ocr = await ref.watch(ocrServiceProvider.future);
   final llm = await ref.watch(llmServiceProvider.future);
 
   return NotePipelineManager(
