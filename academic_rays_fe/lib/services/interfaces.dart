@@ -11,11 +11,13 @@ class StructuredNote {
   final String title;
   final String markdownContent;
   final List<String> keywords;
+  final String? subject;
 
   StructuredNote({
     required this.title,
     required this.markdownContent,
     this.keywords = const [],
+    this.subject,
   });
 }
 

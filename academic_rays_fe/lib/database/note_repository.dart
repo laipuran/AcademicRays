@@ -21,6 +21,12 @@ class NoteRepository {
         );
   }
 
+  Future<int> getOrCreateSubject(String name) async {
+    final existing = await (db.select(db.subjects)..where((t) => t.name.equals(name))).getSingleOrNull();
+    if (existing != null) return existing.id;
+    return await addSubject(name);
+  }
+
   // --- Captures ---
 
   Future<int> addCapture(String path, {double? lat, double? lng}) {

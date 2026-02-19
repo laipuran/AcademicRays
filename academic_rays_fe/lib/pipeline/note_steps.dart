@@ -39,8 +39,15 @@ class StorageStep extends PipelineStep<StructuredNote, int> {
 
   @override
   Future<int> execute(StructuredNote input) async {
+    int? finalSubjectId = subjectId;
+    
+    // Auto-classification: if no subjectId provided, use the one from structured result
+    if (finalSubjectId == null && input.subject != null) {
+      finalSubjectId = await repository.getOrCreateSubject(input.subject!);
+    }
+
     return await repository.createNote(
-      subjectId: subjectId,
+      subjectId: finalSubjectId,
       markdown: input.markdownContent,
       rawText: rawText,
     );

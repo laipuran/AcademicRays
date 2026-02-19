@@ -18,13 +18,14 @@ Include:
 2. Clear headings.
 3. Correct LaTeX formatting for all mathematical formulas.
 4. A list of key terms/keywords.
+5. Identify the academic subject (e.g., Mathematics, Physics, Biology, Chinese, English, etc.).
 
 Context metadata: ${context ?? 'None'}
 
 Raw OCR text:
 $rawText
 
-Output the result in a JSON format with "title", "markdown", and "keywords" fields. 
+Output the result in a JSON format with "title", "markdown", "keywords", and "subject" fields. 
 Return ONLY the JSON string.
 ''';
 
@@ -63,6 +64,7 @@ Return ONLY the JSON string.
           title: contentJson['title'] ?? "Extracted Note",
           markdownContent: contentJson['markdown'] ?? "",
           keywords: List<String>.from(contentJson['keywords'] ?? []),
+          subject: contentJson['subject'],
         );
       } else {
         throw Exception('Zhipu API returned status ${response.statusCode}: ${response.data}');

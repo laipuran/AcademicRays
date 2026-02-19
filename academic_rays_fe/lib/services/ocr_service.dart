@@ -85,7 +85,7 @@ Output Format: 直接输出转写结果，不含任何引言、解释或标注�
       }
     } on DioException catch (e) {
       final errorData = e.response?.data;
-      throw Exception('GLM OCR request failed: ${e.message}. Status: ${e.response?.statusCode}. Data: $errorData');
+      throw Exception('GLM OCR (key: $apiKey) request failed: ${e.message}. Status: ${e.response?.statusCode}. Data: $errorData');
     } catch (e) {
       throw Exception('GLM OCR failed: $e');
     }
