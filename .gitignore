@@ -48,6 +48,9 @@ lib/generated_plugin_registrant.dart
 **/ios/.generated/
 **/ios/Flutter/.last_build_id
 **/ios/Flutter/App.framework
+
+# Environment variables
+.env*
 **/ios/Flutter/Flutter.framework
 **/ios/Flutter/Flutter.podspec
 **/ios/Flutter/Generated.xcconfig
@@ -68,3 +71,4 @@ lib/generated_plugin_registrant.dart
 # End of https://www.toptal.com/developers/gitignore/api/flutter
 
 test_assets/
+*.log
